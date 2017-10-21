@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Net;
 using System.Text;
 
 namespace Problem59
@@ -18,9 +19,27 @@ namespace Problem59
         static int ac = 0;
         static void Main(string[] args)
         {
-            using (var reader = new StreamReader("file.txt"))
+            try
             {
-                hash = reader.ReadToEnd();
+                ReadCipher();
+            }
+            catch (FileNotFoundException)
+            {
+                try
+                {
+                    using (var wc = new WebClient())
+                    {
+                        wc.DownloadFile("https://projecteuler.net/project/resources/p059_cipher.txt", "file.txt"); //Get the cipher
+                        ReadCipher();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error message: ", e.Message);
+                    Console.WriteLine("Failed to downlaod cipher file! Exiting...\nENTER to close");
+                    Console.ReadKey();
+                    return;
+                }
             }
             var words = hash.Split(',');
             Benchmark.Start();
@@ -45,6 +64,14 @@ namespace Problem59
             Console.WriteLine(solution);
             Console.WriteLine("CheckSum(solution): {0}", GetSum());
             Console.ReadKey();
+        }
+
+        private static void ReadCipher()
+        {
+            using (var reader = new StreamReader("file.txt"))
+            {
+                hash = reader.ReadToEnd();
+            }
         }
 
         private static int GetSum()
